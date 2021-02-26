@@ -11,17 +11,17 @@
 (require-mod rocks)
 (require-mod sevarog)
 (require-mod cabin-items)
+(require-mod crystals)
 
 (define my-mod-lang
   (append-rune-langs #:name main.rkt  
                      (hierarchy:my-mod-lang #:with-paren-runes? #t)
-                     (spawners:my-mod-lang)
-                     (triggers:my-mod-lang)
+                     (crystals:my-mod-lang)
                      (fire-particles:my-mod-lang)
                      (ice-particles:my-mod-lang)
                      (rocks:my-mod-lang)
                      (sevarog:my-mod-lang)
-                     (cabin-items:my-mod-lang)
+
 		     ))
 
 
@@ -45,6 +45,7 @@
    #:world (arena-world)
    #:aether (demo-aether
              #:lang my-mod-lang)))
+
 
 
 #;
