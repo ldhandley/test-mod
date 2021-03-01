@@ -1,9 +1,10 @@
-#lang codespells
+#lang at-exp codespells
 
 (require test-mod/mod-info
          (only-in racket/gui message-box get-text-from-user))
 
 (require-mod hierarchy)
+(require-mod dev-runes)
 (require-mod spawners)
 (require-mod triggers)
 (require-mod fire-particles)
@@ -11,23 +12,66 @@
 (require-mod rocks)
 (require-mod sevarog)
 (require-mod cabin-items)
+(require-mod crystals)
+
+(define (with-tag tag code)
+  (thunk
+   @unreal-js{
+     (function(){
+     var x = @(if (procedure? code)
+                  (code)
+                  code)
+
+     if(!global.taggedThings){
+       global.taggedThings = {};}
+
+     console.log(x);
+     
+     global.taggedThings["@tag"] = x;
+     return x;
+     })()
+ }))
+
+(define (delete-with-tag tag)
+  (thunk
+   @unreal-js{
+     (function(){
+       var x = global.taggedThings["@tag"];
+       console.log(x);
+
+       var destroy = function(a){
+         a.GetAttachedActors().OutActors.map(destroy)
+
+         a.DestroyActor()                         
+       }
+       
+       destroy(x);
+       
+       return x;
+     })()
+ }))
+
+(define (move-with-tag tag)
+  (thunk
+   @unreal-js{
+     (function(){
+       var x = global.taggedThings["@tag"];
+
+       x.SetActorLocation({X: @(current-x), Y: @(current-z), Z: @(current-y)})
+                                    
+       return x;
+     })()
+ }))
+
 
 (define my-mod-lang
   (append-rune-langs #:name main.rkt  
-                     (hierarchy:my-mod-lang #:with-paren-runes? #t)
-                     (spawners:my-mod-lang)
-                     (triggers:my-mod-lang)
-                     (fire-particles:my-mod-lang)
-                     (ice-particles:my-mod-lang)
-                     (rocks:my-mod-lang)
-                     (sevarog:my-mod-lang)
-                     (cabin-items:my-mod-lang)
+                     (dev-runes:my-mod-lang #:with-paren-runes? #t)
 		     ))
-
 
 (module+ main
   (codespells-workspace ;TODO: Change this to your local workspace if different
-   (build-path (current-directory) ".." "..")
+   (build-path (current-directory) ".." ".." "CodeSpellsWorkspace")
    ;(build-path (current-directory))
    )
 
@@ -39,7 +83,7 @@
       )
   
   ;-WinX=0 -WinY=50 -ResX=640 -ResY=480 -Windowed 
-  (extra-unreal-command-line-args "-AudioMixer -PixelStreamingIP=localhost -PixelStreamingPort=8888")
+  ;(extra-unreal-command-line-args "-AudioMixer -PixelStreamingIP=localhost -PixelStreamingPort=8888")
   
   (once-upon-a-time
    #:world (arena-world)
